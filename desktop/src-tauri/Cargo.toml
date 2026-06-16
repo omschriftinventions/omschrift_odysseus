@@ -1,6 +1,6 @@
 [package]
 name = "odysseus-desktop"
-version = "1.0.1"
+version = "1.0.3"
 description = "Odysseus desktop shell"
 authors = ["Omschrift"]
 edition = "2021"

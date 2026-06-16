@@ -729,6 +729,37 @@ body.theme-frosted.bg-pattern-fleet .dropdown {
       min-height: 0;
       transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     }
+    /* Sidebar menu typography — larger to match main content */
+    .sidebar .section-header-flex {
+      height: 36px;
+    }
+    .sidebar .section-header-flex h4,
+    .sidebar .section-header-flex .section-title {
+      font-size: 14px;
+    }
+    .sidebar .list-item,
+    .sidebar .models-row {
+      font-size: 15px;
+      padding: 6px 8px;
+    }
+    .sidebar .list-item span,
+    .sidebar .list-item .grow {
+      font-size: 14px;
+    }
+    .sidebar .user-bar-name {
+      font-size: 14px;
+    }
+    .sidebar #sidebar-search-btn .grow,
+    .sidebar #sidebar-new-chat-btn .grow,
+    .sidebar .sidebar-assistant-entry .grow {
+      font-size: 14px;
+    }
+    .sidebar #sidebar-search-btn,
+    .sidebar #sidebar-new-chat-btn,
+    .sidebar .sidebar-assistant-entry {
+      padding: 8px 8px;
+      min-height: 36px;
+    }
     .sidebar-brand {
       display: flex;
       align-items: center;

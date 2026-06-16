@@ -47,7 +47,7 @@ export const THEMES = {
                 } },
 };
 
-const DEFAULT_THEME = 'dark';
+const DEFAULT_THEME = 'omssetu';
 const LS_KEY = 'odysseus-theme';
 const CUSTOM_THEMES_KEY = 'odysseus-custom-themes';
 
@@ -1104,17 +1104,18 @@ export function initThemeUI() {
   syncResetButtons();
 
   // Font, density, background pattern controls
-  const _initFont = (saved && saved.font) || (saved && THEME_DEFAULT_FONT[saved.name]) || DEFAULT_FONT;
+  const _themeName = (saved && saved.name) || DEFAULT_THEME;
+  const _initFont = (saved && saved.font) || THEME_DEFAULT_FONT[_themeName] || DEFAULT_FONT;
   const _initDensity = (saved && saved.density) || DEFAULT_DENSITY;
-  const _initPattern = (saved && saved.bgPattern) || (saved && THEME_DEFAULT_PATTERN[saved.name]) || 'none';
-  const _initEffectColor = (saved && saved.bgEffectColor) || (saved && THEME_DEFAULT_EFFECT_COLOR[saved.name]) || '';
+  const _initPattern = (saved && saved.bgPattern) || THEME_DEFAULT_PATTERN[_themeName] || 'none';
+  const _initEffectColor = (saved && saved.bgEffectColor) || THEME_DEFAULT_EFFECT_COLOR[_themeName] || '';
   const _initEffectIntensity = (saved && saved.bgEffectIntensity !== undefined)
     ? saved.bgEffectIntensity
-    : (saved && THEME_DEFAULT_INTENSITY[saved.name] !== undefined ? THEME_DEFAULT_INTENSITY[saved.name] : 1);
+    : (THEME_DEFAULT_INTENSITY[_themeName] !== undefined ? THEME_DEFAULT_INTENSITY[_themeName] : 1);
   const _initEffectSize = (saved && saved.bgEffectSize !== undefined) ? saved.bgEffectSize : 1;
   const _initFrosted = (saved && saved.frosted !== undefined)
     ? !!saved.frosted
-    : (saved && THEME_DEFAULT_FROSTED[saved.name] === true);
+    : (THEME_DEFAULT_FROSTED[_themeName] === true);
   applyFontDensity(_initFont, _initDensity);
   applyBgEffectColor(_initEffectColor);
   applyBgEffectIntensity(_initEffectIntensity);

@@ -39,6 +39,8 @@ def _configure_environment() -> str:
     os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     if os.name == "nt":
         os.environ.setdefault("ODYSSEUS_SKIP_ADMIN_PROMPT", "1")
+    if _is_frozen():
+        os.environ.setdefault("ODYSSEUS_DESKTOP_BUNDLE", "1")
     return data_dir
 
 
@@ -92,9 +94,19 @@ def _bootstrap_data_dir(data_dir: str) -> None:
     _capture_setup_credentials(data_dir)
 
 
+def _bootstrap_desktop_ai() -> None:
+    try:
+        from src.desktop_bootstrap import ensure_desktop_openrouter
+
+        ensure_desktop_openrouter()
+    except Exception as exc:
+        print(f"  [warn] Desktop AI bootstrap skipped: {exc}", file=sys.stderr)
+
+
 def run_setup_only() -> int:
     data_dir = _configure_environment()
     _bootstrap_data_dir(data_dir)
+    _bootstrap_desktop_ai()
     print(json.dumps({"data_dir": data_dir, "ready": True}))
     return 0
 
@@ -102,6 +114,7 @@ def run_setup_only() -> int:
 def run_server(host: str, port: int) -> int:
     data_dir = _configure_environment()
     _bootstrap_data_dir(data_dir)
+    _bootstrap_desktop_ai()
 
     try:
         import app

@@ -64,7 +64,7 @@
     // login feels consistent with the rest of the app). Per-theme
     // bgEffectColor/Intensity defaults still apply so the random
     // pattern picks up theme-appropriate tinting.
-    var name = (t && t.name) || '';
+    var name = (t && t.name) || 'omssetu';
     // perlin-flow excluded — too visually intense for a login screen.
     var PATTERNS = ['dots','synapse','rain','constellations','petals','sparkles','embers','fleet'];
     var pattern = (t && t.bgPattern) || THEME_DEFAULT_PATTERN[name];
@@ -95,8 +95,8 @@
      localStorage — renders the login page in the same palette as the rest
      of the app instead of a different greys+offwhite scheme. */
   :root {
-    --bg: #282c34; --fg: #9cdef2; --panel: #111; --border: #355a66;
-    --red: #e06c75; --green: #50fa7b;
+    --bg: #f6f8ff; --fg: #0c0f1e; --panel: #ffffff; --border: #c5c9dc;
+    --red: #4f5de8; --green: #50fa7b;
     --bg-effect-intensity: 1;
   }
   /* Background patterns — mirrors static/style.css "Background Patterns"

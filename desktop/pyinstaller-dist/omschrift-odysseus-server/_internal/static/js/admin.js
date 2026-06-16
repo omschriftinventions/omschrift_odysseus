@@ -13,9 +13,46 @@ let modalEl = null;
 // the endpoints list can flash a glow on that row. Cleared once the
 // animation fires.
 let _recentlyAddedEpId = null;
+let _lockModelEndpoints = false;
 
 function el(id) { return document.getElementById(id); }
 function esc(s) { return uiModule.esc(s); }
+
+async function _refreshEndpointLockState() {
+  try {
+    const res = await fetch('/api/auth/features', { credentials: 'same-origin' });
+    if (res.ok) {
+      const features = await res.json();
+      _lockModelEndpoints = !!features.lock_model_endpoints;
+    }
+  } catch (_) {}
+  _applyEndpointLockUI();
+}
+
+function _applyEndpointLockUI() {
+  const services = document.querySelector('[data-settings-panel="services"]');
+  if (!services) return;
+  services.querySelectorAll('.admin-card').forEach(card => {
+    const h2 = card.querySelector('h2');
+    if (!h2) return;
+    const title = h2.textContent || '';
+    if (title.includes('Add Models')) {
+      card.style.display = _lockModelEndpoints ? 'none' : '';
+    }
+    if (title.includes('Added Models')) {
+      const sub = card.querySelector('.admin-toggle-sub');
+      if (sub) {
+        sub.textContent = _lockModelEndpoints
+          ? 'OpenRouter is preconfigured. Available models: Owl Alpha, DeepSeek V4 Flash, and Fusion.'
+          : 'Manage the endpoints you\'ve added.';
+      }
+      ['adm-epProbeAllBtn', 'adm-epClearOfflineBtn'].forEach(id => {
+        const btn = el(id);
+        if (btn) btn.style.display = _lockModelEndpoints ? 'none' : '';
+      });
+    }
+  });
+}
 
 /* ═══════════════════════════════════════════
    USERS TAB
@@ -480,28 +517,31 @@ async function loadEndpoints() {
       const justAddedClass = (_recentlyAddedEpId && String(ep.id) === _recentlyAddedEpId) ? ' adm-ep-just-added' : '';
       const category = ep.category || (_isLocalEndpoint(ep.base_url) ? 'local' : 'api');
       const kindLabel = ep.endpoint_kind && ep.endpoint_kind !== 'auto' ? ep.endpoint_kind.toUpperCase() : '';
-      const keyLabel = ep.has_key
+      const keyLabel = (!_lockModelEndpoints && ep.has_key)
         ? (ep.api_key_fingerprint ? ` (key ${esc(ep.api_key_fingerprint)})` : ' (key set)')
         : '';
+      const canManageModels = hasModels && !_lockModelEndpoints;
+      const actionButtons = _lockModelEndpoints ? '' : `
+            <div style="display:flex;gap:4px;align-items:center;">
+              <button class="admin-btn-sm" data-adm-toggle-ep="${ep.id}">${ep.is_enabled ? 'Disable' : 'Enable'}</button>
+              <button class="admin-btn-delete" data-adm-del-ep="${ep.id}" data-adm-ep-online="${ep.online ? '1' : '0'}">Delete</button>
+              ${canManageModels ? '<svg class="admin-user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;transition:transform 0.2s,opacity 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>' : ''}
+            </div>`;
       return `
         <div class="admin-user-row${ep.is_enabled ? '' : ' admin-ep-disabled'}${justAddedClass}" data-adm-ep-id="${ep.id}">
-          <div style="display:flex;align-items:center;justify-content:space-between;${hasModels ? 'cursor:pointer;' : ''}padding:4px 0;" data-adm-ep-header="${ep.id}">
+          <div style="display:flex;align-items:center;justify-content:space-between;${canManageModels ? 'cursor:pointer;' : ''}padding:4px 0;" data-adm-ep-header="${ep.id}">
             <div class="admin-user-info" style="flex:1;flex-wrap:wrap;gap:0.3rem;">
               <span class="admin-user-name">${esc(ep.name)}</span>
               ${ep.model_type === 'image' ? '<span class="admin-badge" style="background:color-mix(in srgb, var(--accent) 20%, transparent);color:var(--accent);">Image</span>' : ''}
               ${kindLabel ? `<span class="admin-badge">${esc(kindLabel)}</span>` : ''}
               ${statusBadge}
               ${ep.is_enabled ? '' : '<span class="admin-badge admin-badge-off">disabled</span>'}
-              ${hasModels ? '<span style="font-size:10px;opacity:0.4;">Click to manage models</span>' : ''}
+              ${canManageModels ? '<span style="font-size:10px;opacity:0.4;">Click to manage models</span>' : ''}
             </div>
-            <div style="display:flex;gap:4px;align-items:center;">
-              <button class="admin-btn-sm" data-adm-toggle-ep="${ep.id}">${ep.is_enabled ? 'Disable' : 'Enable'}</button>
-              <button class="admin-btn-delete" data-adm-del-ep="${ep.id}" data-adm-ep-online="${ep.online ? '1' : '0'}">Delete</button>
-              ${hasModels ? '<svg class="admin-user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;transition:transform 0.2s,opacity 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>' : ''}
-            </div>
+            ${actionButtons}
           </div>
           <div class="admin-ep-detail">${esc(ep.base_url)}${category === 'local' ? `<button type="button" class="admin-ep-copy-btn" data-adm-copy-url="${esc(ep.base_url)}" title="Copy URL" aria-label="Copy URL" style="background:none;border:none;padding:0 2px;margin-left:6px;cursor:pointer;color:inherit;opacity:0.45;vertical-align:-2px;line-height:1;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>` : ''}${keyLabel}</div>
-          ${hasModels ? `<div class="mcp-tools-panel hidden" data-adm-ep-models-panel="${ep.id}"></div>` : ''}
+          ${canManageModels ? `<div class="mcp-tools-panel hidden" data-adm-ep-models-panel="${ep.id}"></div>` : ''}
         </div>`;
     });
     // Partition rows into Local vs API for the split sections.
@@ -537,6 +577,7 @@ async function loadEndpoints() {
       return out;
     };
     queryAll('[data-adm-toggle-ep]').forEach(btn => {
+      if (_lockModelEndpoints) return;
       btn.addEventListener('click', async (e) => { e.stopPropagation(); await fetch(`/api/model-endpoints/${btn.dataset.admToggleEp}`, { method: 'PATCH' }); loadEndpoints(); });
     });
     queryAll('[data-adm-copy-url]').forEach(btn => {
@@ -555,6 +596,7 @@ async function loadEndpoints() {
       });
     });
     queryAll('[data-adm-del-ep]').forEach(btn => {
+      if (_lockModelEndpoints) return;
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         var epId = btn.dataset.admDelEp;
@@ -589,7 +631,7 @@ async function loadEndpoints() {
     // subsequent loadEndpoints() call (e.g. when toggling a model).
     if (_recentlyAddedEpId) _recentlyAddedEpId = null;
     // Models expand/collapse (click anywhere on card)
-    queryAll('[data-adm-ep-id]').forEach(row => {
+    if (!_lockModelEndpoints) queryAll('[data-adm-ep-id]').forEach(row => {
       const header = row.querySelector('[data-adm-ep-header]');
       if (!header) return;
       let _modelsLoaded = false;
@@ -742,6 +784,7 @@ async function _saveEpModelState(epId, panel) {
 }
 
 function initEndpointForm() {
+  if (_lockModelEndpoints) return;
   const provider = el('adm-epProvider');
   const urlInput = el('adm-epUrl');
   const kindSel = el('adm-epKind');
@@ -2725,14 +2768,17 @@ function initAll() {
     initCalDAV, initBackup, initDangerZone, initTokenForm, initLogsView,
     () => settingsModule.initIntegrations()
   ];
-  for (const fn of inits) {
-    try { fn(); } catch (e) { console.error('Admin init error in', fn.name || 'anonymous', e); }
-  }
-  initialized = true;
-  refreshAll();
+  _refreshEndpointLockState().finally(() => {
+    for (const fn of inits) {
+      try { fn(); } catch (e) { console.error('Admin init error in', fn.name || 'anonymous', e); }
+    }
+    initialized = true;
+    refreshAll();
+  });
 }
 
 function refreshAll() {
+  _applyEndpointLockUI();
   loadUsers();
   loadEndpoints();
   loadBuiltinTools();

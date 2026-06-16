@@ -5,7 +5,7 @@
   <title>Omschrift Odysseus Chat</title>
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
   <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#282c34">
+  <meta name="theme-color" content="#f6f8ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <!-- Disable iOS / Android auto-linkifying of numbers (phone/date/address)
@@ -87,6 +87,21 @@
       if (t && t.bgPattern && t.bgPattern !== 'none') {
         document.addEventListener('DOMContentLoaded', function() {
           document.body.classList.add('bg-pattern-' + t.bgPattern);
+        }, {once:true});
+      } else if (!t || !t.colors) {
+        // First visit — paint Oms Setu before theme.js loads
+        var s0 = document.documentElement.style;
+        s0.setProperty('--bg', '#f6f8ff');
+        s0.setProperty('--fg', '#0c0f1e');
+        s0.setProperty('--panel', '#ffffff');
+        s0.setProperty('--border', '#c5c9dc');
+        s0.setProperty('--red', '#4f5de8');
+        s0.setProperty('--brand-color', '#4f5de8');
+        s0.setProperty('--font-family', "system-ui, -apple-system, 'Segoe UI', sans-serif");
+        var mtc0 = document.querySelector('meta[name="theme-color"]');
+        if (mtc0) mtc0.setAttribute('content', '#f6f8ff');
+        document.addEventListener('DOMContentLoaded', function() {
+          document.body.classList.add('bg-pattern-fleet');
         }, {once:true});
       }
     } catch(e){}

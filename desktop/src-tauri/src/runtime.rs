@@ -7,7 +7,7 @@ use tauri::Manager;
 use crate::paths::is_repo_root;
 
 const BUNDLE_VERSION_FILE: &str = ".desktop-bundle-version";
-const NATIVE_SERVER_BUNDLE_ID: &str = "native-server-2";
+const NATIVE_SERVER_BUNDLE_ID: &str = "native-server-4";
 const NATIVE_SERVER_DIR: &str = "omschrift-odysseus-server";
 const NATIVE_SERVER_EXE: &str = "omschrift-odysseus-server.exe";
 

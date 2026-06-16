@@ -452,6 +452,7 @@ impl ServerManager {
             .stdout(Stdio::from(log_file.try_clone().map_err(|e| e.to_string())?))
             .stderr(Stdio::from(log_file))
             .env("ODYSSEUS_DATA_DIR", &self.data_root)
+            .env("ODYSSEUS_DESKTOP_BUNDLE", "1")
             .env("HF_HUB_DISABLE_SYMLINKS", "1")
             .env("HF_HUB_DISABLE_SYMLINKS_WARNING", "1");
 
