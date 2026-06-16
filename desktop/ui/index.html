@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Omschrift Odysseus</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #1e2127;
+      --fg: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #7aa2f7;
+      --error: #f7768e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #2a2f3a 0%, var(--bg) 55%);
+      color: var(--fg);
+      font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+    }
+    .card {
+      width: min(420px, calc(100vw - 32px));
+      padding: 28px 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.22);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      text-align: center;
+    }
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      margin: 0 auto 16px;
+      object-fit: cover;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .status {
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      font-size: 13px;
+      word-break: break-word;
+    }
+    .status.error { color: var(--error); }
+    .credentials {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(122, 162, 247, 0.12);
+      border: 1px solid rgba(122, 162, 247, 0.25);
+      text-align: left;
+      font-size: 13px;
+    }
+    .credentials.visible { display: block; }
+    .credentials strong { color: var(--fg); }
+    .credentials .row { margin-top: 6px; }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      margin: 18px auto 0;
+      border: 3px solid rgba(255, 255, 255, 0.12);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    .spinner.hidden { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hint {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="icons/icon-192.png" alt="Omschrift Odysseus" width="72" height="72" />
+    <h1>Omschrift Odysseus</h1>
+    <p class="subtitle">Setting up your local AI workspace…</p>
+    <div id="status" class="status">Initializing…</div>
+    <div id="credentials" class="credentials" aria-live="polite">
+      <div><strong>First-login credentials</strong></div>
+      <div class="row">Username: <strong id="admin-user">admin</strong></div>
+      <div class="row">Password: <strong id="admin-password"></strong></div>
+      <div class="row" style="margin-top:10px;color:var(--muted);font-size:12px;">
+        Opening the app in a few seconds. Change this password after login.
+      </div>
+    </div>
+    <div id="spinner" class="spinner" aria-hidden="true"></div>
+    <p class="hint" id="hint">If setup fails, this window stays open with details. You can also reopen the app from the system tray.</p>
+  </div>
+  <script>
+    (function () {
+      const statusEl = document.getElementById('status');
+      const spinnerEl = document.getElementById('spinner');
+      const credentialsEl = document.getElementById('credentials');
+      const adminUserEl = document.getElementById('admin-user');
+      const adminPasswordEl = document.getElementById('admin-password');
+      const hintEl = document.getElementById('hint');
+
+      function setStatus(message, isError) {
+        if (!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.classList.toggle('error', Boolean(isError));
+      }
+
+      function showCredentials(user, password) {
+        if (!credentialsEl || !adminUserEl || !adminPasswordEl) return;
+        adminUserEl.textContent = user || 'admin';
+        adminPasswordEl.textContent = password || '';
+        credentialsEl.classList.add('visible');
+        if (spinnerEl) spinnerEl.classList.add('hidden');
+      }
+
+      function bindEvents() {
+        const listen = window.__TAURI__?.event?.listen;
+        if (!listen) {
+          setStatus('Waiting for desktop shell…');
+          return;
+        }
+        listen('server-status', function (event) {
+          const payload = event.payload;
+          if (typeof payload === 'string') {
+            setStatus(payload, false);
+            return;
+          }
+          if (payload && typeof payload === 'object') {
+            if (payload.message) setStatus(payload.message, Boolean(payload.error));
+            if (payload.error && hintEl) {
+              hintEl.textContent =
+                'Setup failed. Reopen Omschrift Odysseus from the system tray. Logs: %LOCALAPPDATA%\\com.odysseus.desktop\\logs\\';
+            }
+            if (payload.admin_password) {
+              showCredentials(payload.admin_user, payload.admin_password);
+            }
+            if (payload.error && spinnerEl) spinnerEl.classList.add('hidden');
+          }
+        }).catch(function () {
+          setStatus('Waiting for Omschrift Odysseus…');
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindEvents);
+      } else {
+        bindEvents();
+      }
+    })();
+  </script>
+</body>
+</html>
