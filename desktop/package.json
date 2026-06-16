@@ -1,0 +1,14 @@
+{
+  "name": "odysseus-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Odysseus desktop shell for Windows",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0"
+  }
+}

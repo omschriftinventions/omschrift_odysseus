@@ -59,6 +59,7 @@ Thumbs.db
 *.cache
 cache/
 output.txt.txt
+desktop/src-tauri/bundle/
 
 # Media (uploaded/generated)
 *.jpg
@@ -72,6 +73,8 @@ output.txt.txt
 
 # …except shipped static assets
 !static/icons/*.png
+!desktop/icons/*.png
+!desktop/src-tauri/icons/*.png
 
 # …except shipped demo assets in docs/ that the README links to.
 !docs/*.jpg
