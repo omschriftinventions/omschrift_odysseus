@@ -42,6 +42,12 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "02b77613-f81b-4062-bd4c-365d2af4625b"
+      }
+    },
+    "owner": "freeza_goku"
   }
 }
