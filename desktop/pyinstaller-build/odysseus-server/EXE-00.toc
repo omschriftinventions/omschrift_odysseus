@@ -79,7 +79,7 @@
  [],
  False,
  False,
- 1781608578,
+ 1781609924,
  [('run.exe',
    'C:\\Omschrift\\Projects\\Omschrift\\odysseus\\venv\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
    'EXECUTABLE')],
